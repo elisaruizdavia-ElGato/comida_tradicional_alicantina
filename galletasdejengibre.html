@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Galletas de jengibre – Comida tradicional alicantina</title>
+
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css"
+        integrity="sha384-Zenh87qX5JnK2Jl0vWa8Ck2rdkQ2Bzep5IDxbcnCeuOxjzrPF/et3URy9Bv1WTRi" crossorigin="anonymous" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <header class="cabecera con-menu">
+    <a class="boton-menu" href="index.html" role="button" aria-label="Abrir el menú de recetas" aria-expanded="false">
+      <svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true"><path d="M3 6h18M3 12h18M3 18h18" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>
+    </a>
+    <a class="cabecera-enlace" href="index.html">
+      <img class="cabecera-titulo" src="imagenes/titulo.png" alt="Comida tradicional alicantina" width="987" height="52" />
+      <img class="cabecera-castillo" src="imagenes/castillo.svg" alt="" aria-hidden="true" />
+    </a>
+  </header>
+
+  <div class="titulo-receta">
+    <h1>Galletas de jengibre 🍪</h1>
+  </div>
+
+  <div class="receta-wrapper">
+
+    <div class="card-ingredientes">
+      <h2>Ingredientes</h2>
+      <ul class="ingredientes" data-sin-comensales>
+        <li>250 g de harina de trigo</li>
+        <li>100 g de mantequilla blanda (mejor a temperatura ambiente)</li>
+        <li>100 g de azúcar (blanco o moreno)</li>
+        <li>1 huevo</li>
+        <li>1 cucharadita rasa de jengibre en polvo o fresco</li>
+        <li>1 cucharadita rasa de canela (opcional, pero queda muy bien)</li>
+        <li>½ cucharadita de levadura química</li>
+        <li>1 pizca de sal</li>
+      </ul>
+    </div>
+
+    <div class="card-instrucciones">
+      <h2>Preparación</h2>
+
+      <div class="paso">
+        <input type="checkbox" id="paso1" />
+        <label for="paso1">
+          <b>Mantequilla y azúcar.</b> Mezcla la <mark>mantequilla</mark> con el <mark>azúcar</mark>.
+        </label>
+      </div>
+
+      <div class="paso">
+        <input type="checkbox" id="paso2" />
+        <label for="paso2">
+          <b>El huevo.</b> Añade el <mark>huevo</mark> y mezcla.
+        </label>
+      </div>
+
+      <div class="paso">
+        <input type="checkbox" id="paso3" />
+        <label for="paso3">
+          <b>Los secos.</b> Incorpora la <mark>harina</mark>, el <mark>jengibre</mark>, la <mark>canela</mark>, la <mark>levadura</mark> y la <mark>sal</mark>. Mezcla hasta que se forme una masa.
+        </label>
+      </div>
+
+      <div class="paso">
+        <input type="checkbox" id="paso4" />
+        <label for="paso4">
+          <b>Amasar.</b> Amasa un poco con las manos. Si se pega, añade un pelín más de harina.
+        </label>
+      </div>
+
+      <div class="paso">
+        <input type="checkbox" id="paso5" />
+        <label for="paso5">
+          <b>Estirar y cortar.</b> Estira la masa con un rodillo y corta con moldes: muñecos, estrellas, corazones… Es la parte más divertida 🥰
+        </label>
+      </div>
+
+      <div class="paso">
+        <input type="checkbox" id="paso6" />
+        <label for="paso6">
+          <b>Hornear.</b> Con el horno precalentado a <mark>180 °C</mark>, hornea <mark>10–12 minutos</mark>, hasta que estén ligeramente doradas.
+        </label>
+      </div>
+
+      <div class="paso">
+        <input type="checkbox" id="paso7" />
+        <label for="paso7">
+          <b>Dejar enfriar.</b> Al salir estarán blanditas; al enfriarse se endurecen un poco.
+        </label>
+      </div>
+
+    </div>
+
+    <img class="imagen-receta" src="imagenes/galletasdejengibre.jpg" alt="Galletas de jengibre" />
+
+  </div><!-- /receta-wrapper -->
+
+  <footer class="pie-ondas">
+    <img src="imagenes/ondas.svg" alt="" aria-hidden="true" />
+  </footer>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js"
+          integrity="sha384-OERcA2JD1N/z7y6/5OBU+cF1JigU2wRAKcF5dKTFJc0y2z8pp7rfH5G8pJfH/Xg" crossorigin="anonymous"></script>
+  <script src="script.js"></script>
+</body>
+</html>

@@ -784,3 +784,10 @@ footer a {
 .titulo-receta {
   padding-top: 20px;
 }
+
+.nota-receta {
+  font-family: var(--font-body);
+  font-size: 14px;
+  color: var(--text-muted);
+  margin: 12px 0 0;
+}
