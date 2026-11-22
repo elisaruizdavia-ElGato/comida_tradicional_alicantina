@@ -232,6 +232,13 @@ document.querySelectorAll('img.imagen-receta').forEach(function (img) {
 
   boton.addEventListener('click', function (e) {
     if (panel) { e.preventDefault(); abrir(); return; }
+    if (document.querySelector('.seccion')) { // estamos en la portada
+      e.preventDefault();
+      construir(document);
+      void panel.offsetWidth;
+      abrir();
+      return;
+    }
     if (!window.fetch || !window.DOMParser) return; // sin JS moderno: va a la portada
     e.preventDefault();
     fetch('index.html')
