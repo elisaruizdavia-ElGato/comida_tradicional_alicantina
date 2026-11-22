@@ -167,3 +167,81 @@ document.querySelectorAll('img.imagen-receta').forEach(function (img) {
   if (img.complete && img.naturalWidth === 0) ocultar();
   img.addEventListener('error', ocultar);
 });
+
+// ================================
+// Menú lateral (botón ☰ de la cabecera)
+// Lee las recetas de la portada para no tener que mantener otra lista.
+// ================================
+(function () {
+  var boton = document.querySelector('.boton-menu');
+  if (!boton) return;
+
+  var panel = null;
+  var fondo = null;
+
+  function cerrar() {
+    if (!panel) return;
+    panel.classList.remove('abierto');
+    fondo.classList.remove('abierto');
+    boton.setAttribute('aria-expanded', 'false');
+    document.body.style.overflow = '';
+    boton.focus();
+  }
+
+  function abrir() {
+    panel.classList.add('abierto');
+    fondo.classList.add('abierto');
+    boton.setAttribute('aria-expanded', 'true');
+    document.body.style.overflow = 'hidden';
+    var primero = panel.querySelector('a, button');
+    if (primero) primero.focus();
+  }
+
+  function construir(docPortada) {
+    panel = document.createElement('nav');
+    panel.className = 'menu-lateral';
+    panel.setAttribute('aria-label', 'Recetas');
+    var actual = decodeURIComponent(location.pathname.split('/').pop());
+    var html = '<div class="menu-cabecera"><span>Recetas</span>' +
+      '<button type="button" class="menu-cerrar" aria-label="Cerrar el menú">✕</button></div>' +
+      '<a class="menu-inicio" href="index.html">Inicio</a>';
+    docPortada.querySelectorAll('.seccion').forEach(function (sec) {
+      var titulo = sec.querySelector('h2');
+      html += '<h3>' + (titulo ? titulo.textContent : '') + '</h3><ul>';
+      sec.querySelectorAll('.tarjeta').forEach(function (t) {
+        var href = t.getAttribute('href');
+        var nombre = t.querySelector('.nombre').textContent;
+        var esta = decodeURIComponent(href) === actual ? ' class="actual" aria-current="page"' : '';
+        html += '<li><a href="' + href + '"' + esta + '>' + nombre + '</a></li>';
+      });
+      html += '</ul>';
+    });
+    html += '<a class="menu-sobre-mi" href="quiensoy.html">Sobre mí</a>';
+    panel.innerHTML = html;
+
+    fondo = document.createElement('div');
+    fondo.className = 'menu-fondo';
+
+    document.body.appendChild(fondo);
+    document.body.appendChild(panel);
+
+    fondo.addEventListener('click', cerrar);
+    panel.querySelector('.menu-cerrar').addEventListener('click', cerrar);
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape') cerrar(); });
+  }
+
+  boton.addEventListener('click', function (e) {
+    if (panel) { e.preventDefault(); abrir(); return; }
+    if (!window.fetch || !window.DOMParser) return; // sin JS moderno: va a la portada
+    e.preventDefault();
+    fetch('index.html')
+      .then(function (r) { return r.text(); })
+      .then(function (texto) {
+        construir(new DOMParser().parseFromString(texto, 'text/html'));
+        // forzar el reflow para que se vea la animación
+        void panel.offsetWidth;
+        abrir();
+      })
+      .catch(function () { location.href = 'index.html'; });
+  });
+})();

@@ -485,25 +485,6 @@ footer a {
   width: auto;
 }
 
-.volver {
-  max-width: 740px;
-  margin: 0 auto;
-  padding: 12px 20px 0;
-}
-
-.volver a {
-  font-family: var(--font-ui);
-  font-size: 13px;
-  font-weight: 600;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  color: #024796;
-  text-decoration: none;
-}
-
-.volver a:hover {
-  color: var(--accent);
-}
 
 /* ================================
    Pie con las ondas de la Explanada
@@ -653,4 +634,153 @@ footer a {
 
 .tarjeta:hover .nombre {
   color: var(--accent);
+}
+
+/* ================================
+   Botón ☰ y menú lateral
+================================ */
+
+.cabecera.con-menu {
+  position: relative;
+}
+
+.boton-menu {
+  position: absolute;
+  left: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  color: #070b13;
+  z-index: 2;
+}
+
+.boton-menu:hover,
+.boton-menu:focus-visible {
+  background-color: #ece3d6;
+  color: #070b13;
+}
+
+.con-menu .cabecera-enlace {
+  padding-left: 60px;
+}
+
+.menu-fondo {
+  position: fixed;
+  inset: 0;
+  background: rgba(20, 15, 10, 0.35);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s;
+  z-index: 50;
+}
+
+.menu-fondo.abierto {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.menu-lateral {
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: min(320px, 85vw);
+  background: var(--cream);
+  box-shadow: 4px 0 24px rgba(0, 0, 0, 0.12);
+  transform: translateX(-105%);
+  transition: transform 0.28s ease;
+  overflow-y: auto;
+  padding: 0 22px 32px;
+  z-index: 51;
+}
+
+.menu-lateral.abierto {
+  transform: translateX(0);
+}
+
+.menu-cabecera {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 0 12px;
+  border-bottom: 2px solid var(--mark-border);
+  font-family: var(--font-ui);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.menu-cerrar {
+  border: none;
+  background: none;
+  font-size: 20px;
+  color: var(--text);
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.menu-cerrar:hover {
+  background-color: #ece3d6;
+}
+
+.menu-lateral h3 {
+  font-family: var(--font-ui);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin: 22px 0 6px;
+}
+
+.menu-lateral ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.menu-lateral li a,
+.menu-inicio,
+.menu-sobre-mi {
+  display: block;
+  padding: 7px 0;
+  font-family: var(--font-body);
+  font-size: 16px;
+  color: var(--text);
+  text-decoration: none;
+}
+
+.menu-lateral li a:hover,
+.menu-inicio:hover,
+.menu-sobre-mi:hover {
+  color: var(--accent);
+}
+
+.menu-lateral li a.actual {
+  color: var(--accent);
+  font-style: italic;
+}
+
+.menu-inicio {
+  margin-top: 10px;
+  font-weight: bold;
+}
+
+.menu-sobre-mi {
+  margin-top: 22px;
+  padding-top: 14px;
+  border-top: 1px solid #e8e0d5;
+}
+
+.titulo-receta {
+  padding-top: 20px;
 }
