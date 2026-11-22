@@ -566,9 +566,13 @@ footer a {
 }
 
 .seccion .titulo2 {
-  margin: 0 0 12px;
-  padding-bottom: 8px;
-  border-bottom: 2px solid var(--mark-border);
+  margin: 0 0 14px;
+  padding: 9px 14px;
+  background-color: #a5714d;
+  color: #f8f4ec;
+  border-radius: var(--radius);
+  font-size: 12px;
+  letter-spacing: 0.14em;
 }
 
 .rejilla {
