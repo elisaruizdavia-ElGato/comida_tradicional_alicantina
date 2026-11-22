@@ -158,3 +158,12 @@ document.querySelectorAll('.ingredientes li').forEach(function (li) {
   select.addEventListener('change', aplicar);
   aplicar();
 })();
+
+// ================================
+// Si falta la foto de la receta, ocultar el hueco roto
+// ================================
+document.querySelectorAll('img.imagen-receta').forEach(function (img) {
+  function ocultar() { img.style.display = 'none'; }
+  if (img.complete && img.naturalWidth === 0) ocultar();
+  img.addEventListener('error', ocultar);
+});
