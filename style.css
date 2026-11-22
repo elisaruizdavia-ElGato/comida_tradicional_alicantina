@@ -3,7 +3,7 @@
 ================================ */
 
 :root {
-  --cream: #fdf6ee;
+  --cream: #f8f4ec;
   --white: #ffffff;
   --text: #2c2c2c;
   --text-muted: #777;
@@ -449,4 +449,41 @@ footer a {
   font-family: var(--font-ui);
   font-size: 14px;
   text-decoration: none;
+}
+
+/* ================================
+   Cabecera con imagen
+================================ */
+
+.cabecera {
+  background-color: var(--cream);
+  border-bottom: 1px solid #e8e0d5;
+}
+
+.cabecera img {
+  display: block;
+  width: 100%;
+  max-width: 1100px;
+  height: auto;
+  margin: 0 auto;
+}
+
+.volver {
+  max-width: 740px;
+  margin: 0 auto;
+  padding: 12px 20px 0;
+}
+
+.volver a {
+  font-family: var(--font-ui);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: #024796;
+  text-decoration: none;
+}
+
+.volver a:hover {
+  color: var(--accent);
 }
