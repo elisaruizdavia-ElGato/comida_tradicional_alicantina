@@ -11,6 +11,8 @@ document.querySelectorAll('.ingredientes li').forEach(function (li) {
 // Selector de comensales
 // La lista de ingredientes lleva data-comensales="2" (para cuántas personas
 // están escritas las cantidades). Si no lo lleva, se asume 2.
+// Al abrir una receta se muestra siempre para POR_DEFECTO personas
+// (o lo último que eligió el visitante).
 // ================================
 (function () {
   var lista = document.querySelector('.ingredientes');
@@ -19,6 +21,7 @@ document.querySelectorAll('.ingredientes li').forEach(function (li) {
 
   var base = parseFloat(lista.getAttribute('data-comensales')) || 2;
   var MAX = 6;
+  var POR_DEFECTO = 2;
 
   var FRAC = { '½': 0.5, '¼': 0.25, '¾': 0.75, '⅓': 1 / 3, '⅔': 2 / 3 };
   var NUM_RE = /(\d+(?:[.,]\d+)?\s?[½¼¾⅓⅔]?|[½¼¾⅓⅔])/g;
@@ -139,7 +142,7 @@ document.querySelectorAll('.ingredientes li').forEach(function (li) {
   }
 
   var select = caja.querySelector('select');
-  var inicial = base;
+  var inicial = POR_DEFECTO;
   try {
     var guardado = parseInt(localStorage.getItem('comensales'), 10);
     if (guardado >= 1 && guardado <= MAX) inicial = guardado;
