@@ -476,7 +476,7 @@ footer a {
   gap: 14px;
   max-width: 900px;
   margin: 0 auto;
-  padding: 16px 16px 10px;
+  padding: 13px 16px;
   text-decoration: none;
 }
 
@@ -497,6 +497,9 @@ footer a {
 
 .cabecera-castillo {
   flex: 0 0 auto;
+  /* subir un poco el castillo para que su cuerpo (sin la bandera)
+     quede a la altura del título y del botón del menú */
+  transform: translateY(-9%);
   height: clamp(58px, 11vw, 110px);
   width: auto;
 }
@@ -903,4 +906,26 @@ footer a {
 
 .carrusel-puntos button.activo {
   background: var(--accent);
+}
+
+
+/* ================================
+   Enlace "Todas las recetas" encima del título de cada receta
+================================ */
+.volver {
+  display: inline-block;
+  margin-bottom: 10px;
+  padding: 4px 0;
+  font-family: var(--font-ui);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #024796;
+  text-decoration: none;
+}
+
+.volver:hover,
+.volver:focus-visible {
+  color: var(--accent);
 }
