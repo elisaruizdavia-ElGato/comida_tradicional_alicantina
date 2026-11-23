@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Patatas asadas – Comida tradicional alicantina</title>
+
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css"
+        integrity="sha384-Zenh87qX5JnK2Jl0vWa8Ck2rdkQ2Bzep5IDxbcnCeuOxjzrPF/et3URy9Bv1WTRi" crossorigin="anonymous" />
+  <link rel="stylesheet" href="style.css?v=20261122e" />
+</head>
+<body>
+
+  <header class="cabecera con-menu">
+    <a class="boton-menu" href="index.html" role="button" aria-label="Abrir el menú de recetas" aria-expanded="false">
+      <svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true"><path d="M3 6h18M3 12h18M3 18h18" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>
+    </a>
+    <a class="cabecera-enlace" href="index.html">
+      <img class="cabecera-titulo" src="imagenes/titulo.png" alt="Comida tradicional alicantina" width="987" height="52" />
+      <img class="cabecera-castillo" src="imagenes/castillo.svg" alt="" aria-hidden="true" />
+    </a>
+  </header>
+
+  <div class="titulo-receta">
+    <h1>Patatas asadas</h1>
+  </div>
+
+  <div class="receta-wrapper">
+
+    <div class="card-ingredientes">
+      <h2>Ingredientes</h2>
+      <ul class="ingredientes" data-comensales="2">
+        <li>Patatas</li>
+        <li>Sal</li>
+        <li>Aceite de oliva</li>
+      </ul>
+    </div>
+
+    <div class="card-instrucciones">
+      <h2>Preparación</h2>
+
+      <div class="paso">
+        <input type="checkbox" id="paso1" />
+        <label for="paso1">
+          <b>Precalentar el horno.</b> Ponerlo a <mark>220 °C</mark>.
+        </label>
+      </div>
+
+      <div class="paso">
+        <input type="checkbox" id="paso2" />
+        <label for="paso2">
+          <b>Cortar las patatas.</b> Si son pequeñas, <mark>por la mitad</mark>. Si son muy grandes, en <mark>rodajas de 2 cm</mark> de grosor (salen unas tres por patata).
+        </label>
+      </div>
+
+      <div class="paso">
+        <input type="checkbox" id="paso3" />
+        <label for="paso3">
+          <b>Hacer los cuadritos.</b> Con un cuchillo, marcar la cara cortada en <mark>cuadrícula</mark>, lo más profundo que se pueda.
+        </label>
+      </div>
+
+      <div class="paso">
+        <input type="checkbox" id="paso4" />
+        <label for="paso4">
+          <b>Aliñar.</b> Echar <mark>sal</mark> y <mark>aceite de oliva</mark> por encima.
+        </label>
+      </div>
+
+      <div class="paso">
+        <input type="checkbox" id="paso5" />
+        <label for="paso5">
+          <b>Al horno.</b> Poner la bandeja en uno de los <mark>niveles de abajo</mark> y dejar unos <mark>40 minutos</mark>.
+        </label>
+      </div>
+
+      <div class="paso">
+        <input type="checkbox" id="paso6" />
+        <label for="paso6">
+          <b>Punto.</b> Están hechas cuando los <mark>cuadrados empiezan a abrirse</mark>, como en la foto.
+        </label>
+      </div>
+
+    </div>
+
+    <img class="imagen-receta" src="imagenes/patatasasadas.jpg" alt="Patatas asadas" />
+
+  </div><!-- /receta-wrapper -->
+
+  <footer class="pie-ondas">
+    <img src="imagenes/ondas.svg" alt="" aria-hidden="true" />
+  </footer>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js"
+          integrity="sha384-OERcA2JD1N/z7y6/5OBU+cF1JigU2wRAKcF5dKTFJc0y2z8pp7rfH5G8pJfH/Xg" crossorigin="anonymous"></script>
+  <script src="script.js?v=20261122e"></script>
+</body>
+</html>
