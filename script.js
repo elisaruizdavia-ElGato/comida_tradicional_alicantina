@@ -310,3 +310,83 @@ document.querySelectorAll('.carrusel').forEach(function (carrusel) {
   window.addEventListener('resize', refrescar);
   refrescar();
 });
+
+// ================================
+// Pasar de receta deslizando el dedo
+// Izquierda → siguiente receta, derecha → anterior.
+// El orden es el de la portada. Abajo de cada receta
+// también salen enlaces a la anterior y la siguiente.
+// ================================
+(function () {
+  var wrapper = document.querySelector('.receta-wrapper');
+  if (!wrapper || document.querySelector('.seccion') || !document.querySelector('.card-ingredientes')) return;
+  if (!window.fetch || !window.DOMParser) return;
+
+  var actual = decodeURIComponent(location.pathname.split('/').pop());
+
+  function conLista(cb) {
+    try {
+      var guardada = sessionStorage.getItem('listaRecetas');
+      if (guardada) { cb(JSON.parse(guardada)); return; }
+    } catch (e) {}
+    fetch('index.html')
+      .then(function (r) { return r.text(); })
+      .then(function (texto) {
+        var doc = new DOMParser().parseFromString(texto, 'text/html');
+        var lista = [];
+        doc.querySelectorAll('.seccion .tarjeta').forEach(function (t) {
+          lista.push({ href: t.getAttribute('href'), nombre: t.querySelector('.nombre').textContent });
+        });
+        try { sessionStorage.setItem('listaRecetas', JSON.stringify(lista)); } catch (e) {}
+        cb(lista);
+      })
+      .catch(function () {});
+  }
+
+  conLista(function (lista) {
+    var i = -1;
+    lista.forEach(function (r, k) { if (decodeURIComponent(r.href) === actual) i = k; });
+    if (i < 0) return;
+    var ant = lista[i - 1];
+    var sig = lista[i + 1];
+
+    // Enlaces al final de la receta
+    var nav = document.createElement('nav');
+    nav.className = 'entre-recetas';
+    nav.setAttribute('aria-label', 'Otras recetas');
+    nav.innerHTML =
+      (ant ? '<a class="anterior" href="' + ant.href + '"><small>‹ Anterior</small>' + ant.nombre + '</a>' : '<span></span>') +
+      (sig ? '<a class="siguiente" href="' + sig.href + '"><small>Siguiente ›</small>' + sig.nombre + '</a>' : '<span></span>');
+    wrapper.appendChild(nav);
+
+    // Gesto de deslizar
+    var x0 = null, y0 = 0, t0 = 0;
+    document.addEventListener('touchstart', function (e) {
+      x0 = null;
+      if (e.touches.length !== 1) return;
+      var t = e.touches[0];
+      // No interferir con el carrusel de fotos, el menú ni el gesto de "atrás" del borde
+      if (e.target.closest('.carrusel, .menu-lateral, select, input')) return;
+      if (t.clientX < 30 || t.clientX > window.innerWidth - 30) return;
+      x0 = t.clientX; y0 = t.clientY; t0 = Date.now();
+    }, { passive: true });
+
+    document.addEventListener('touchend', function (e) {
+      if (x0 === null) return;
+      var t = e.changedTouches[0];
+      var dx = t.clientX - x0, dy = t.clientY - y0;
+      x0 = null;
+      if (Date.now() - t0 > 700) return;
+      if (Math.abs(dx) < 70 || Math.abs(dx) < Math.abs(dy) * 2) return;
+      var destino = dx < 0 ? sig : ant;
+      if (!destino) return;
+      document.body.classList.add(dx < 0 ? 'salida-izq' : 'salida-der');
+      setTimeout(function () { location.href = destino.href; }, 160);
+    }, { passive: true });
+
+    // Si se vuelve atrás con el navegador, quitar la animación de salida
+    window.addEventListener('pageshow', function () {
+      document.body.classList.remove('salida-izq', 'salida-der');
+    });
+  });
+})();
