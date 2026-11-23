@@ -366,7 +366,7 @@ document.querySelectorAll('.carrusel').forEach(function (carrusel) {
       if (e.touches.length !== 1) return;
       var t = e.touches[0];
       // No interferir con el carrusel de fotos, el menú ni el gesto de "atrás" del borde
-      if (e.target.closest('.carrusel, .menu-lateral, select, input')) return;
+      if (e.target.closest('.carrusel, .menu-lateral, .visor, select, input')) return;
       if (t.clientX < 30 || t.clientX > window.innerWidth - 30) return;
       x0 = t.clientX; y0 = t.clientY; t0 = Date.now();
     }, { passive: true });
@@ -388,5 +388,54 @@ document.querySelectorAll('.carrusel').forEach(function (carrusel) {
     window.addEventListener('pageshow', function () {
       document.body.classList.remove('salida-izq', 'salida-der');
     });
+  });
+})();
+
+// ================================
+// Tocar una foto de la receta para verla en grande
+// ================================
+(function () {
+  var fotos = document.querySelectorAll('.receta-wrapper .imagen-receta');
+  if (!fotos.length) return;
+
+  function abrir(original) {
+    var visor = document.createElement('div');
+    visor.className = 'visor';
+    visor.setAttribute('role', 'dialog');
+    visor.setAttribute('aria-label', 'Foto en grande');
+    var copia;
+    if (original.tagName === 'VIDEO') {
+      copia = document.createElement('video');
+      copia.src = original.currentSrc || original.src;
+      copia.autoplay = true; copia.loop = true; copia.muted = true;
+      copia.setAttribute('playsinline', '');
+    } else {
+      copia = document.createElement('img');
+      copia.src = original.currentSrc || original.src;
+      copia.alt = original.alt || '';
+    }
+    var cerrarBtn = document.createElement('button');
+    cerrarBtn.type = 'button';
+    cerrarBtn.className = 'visor-cerrar';
+    cerrarBtn.setAttribute('aria-label', 'Cerrar');
+    cerrarBtn.textContent = '✕';
+    visor.appendChild(copia);
+    visor.appendChild(cerrarBtn);
+    document.body.appendChild(visor);
+    document.body.style.overflow = 'hidden';
+
+    function cerrar() {
+      visor.remove();
+      document.body.style.overflow = '';
+      document.removeEventListener('keydown', tecla);
+    }
+    function tecla(e) { if (e.key === 'Escape') cerrar(); }
+    visor.addEventListener('click', cerrar);
+    document.addEventListener('keydown', tecla);
+    cerrarBtn.focus();
+  }
+
+  fotos.forEach(function (f) {
+    f.addEventListener('click', function () { abrir(f); });
   });
 })();

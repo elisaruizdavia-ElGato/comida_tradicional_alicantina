@@ -269,10 +269,13 @@ mark, .fosforito {
 .imagen-receta {
   width: 100%;
   height: auto;
+  aspect-ratio: 3 / 2;
+  max-height: 420px;
   border-radius: var(--radius);
   object-fit: cover;
   display: block;
-  margin-top: 14px;
+  margin: 0 0 14px;
+  cursor: zoom-in;
 }
 
 /* ================================
@@ -832,7 +835,7 @@ footer a {
 ================================ */
 .carrusel {
   position: relative;
-  margin-top: 14px;
+  margin-bottom: 14px;
 }
 
 .carrusel-pista {
@@ -852,8 +855,8 @@ footer a {
 .carrusel-pista .imagen-receta {
   flex: 0 0 100%;
   width: 100%;
-  aspect-ratio: 4 / 5;
-  max-height: 80vh;
+  aspect-ratio: 3 / 2;
+  max-height: 420px;
   margin: 0;
   border-radius: 0;
   scroll-snap-align: center;
@@ -981,3 +984,39 @@ body.salida-izq .titulo-receta,
 body.salida-izq .receta-wrapper { transform: translateX(-40px); }
 body.salida-der .titulo-receta,
 body.salida-der .receta-wrapper { transform: translateX(40px); }
+
+
+/* ================================
+   Foto en grande al tocarla
+================================ */
+.visor {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(15, 12, 10, 0.92);
+  cursor: zoom-out;
+}
+
+.visor img,
+.visor video {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+.visor-cerrar {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 40px;
+  height: 40px;
+  border: none;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.9);
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+}
