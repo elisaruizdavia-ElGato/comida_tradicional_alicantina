@@ -511,12 +511,17 @@ footer a {
   text-align: center;
   border-top: none;
   margin-top: 0;
+  overflow: hidden;
 }
 
+/* Se amplía un poco y se recortan los extremos en vertical,
+   para que las ondas no terminen con esos picos irregulares */
 .pie-ondas img {
   width: 100%;
   max-width: 520px;
   height: auto;
+  transform: scale(1.08);
+  clip-path: inset(0 4%);
 }
 
 /* ================================
