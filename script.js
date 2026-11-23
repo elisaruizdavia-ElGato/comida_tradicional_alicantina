@@ -255,3 +255,58 @@ document.querySelectorAll('img.imagen-receta').forEach(function (img) {
       .catch(function () { location.href = 'index.html'; });
   });
 })();
+
+// ================================
+// Carrusel de fotos: flechas y puntitos
+// En el HTML basta con poner las fotos dentro de
+// <div class="carrusel"><div class="carrusel-pista"> ... </div></div>
+// ================================
+document.querySelectorAll('.carrusel').forEach(function (carrusel) {
+  var pista = carrusel.querySelector('.carrusel-pista');
+  var fotos = pista.querySelectorAll('img');
+  if (fotos.length < 2) return;
+
+  function boton(clase, texto, etiqueta) {
+    var b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'carrusel-flecha ' + clase;
+    b.setAttribute('aria-label', etiqueta);
+    b.innerHTML = texto;
+    carrusel.appendChild(b);
+    return b;
+  }
+  var anterior = boton('anterior', '&#8249;', 'Foto anterior');
+  var siguiente = boton('siguiente', '&#8250;', 'Foto siguiente');
+
+  var puntos = document.createElement('div');
+  puntos.className = 'carrusel-puntos';
+  fotos.forEach(function (_f, i) {
+    var p = document.createElement('button');
+    p.type = 'button';
+    p.setAttribute('aria-label', 'Ver foto ' + (i + 1));
+    p.addEventListener('click', function () { ir(i); });
+    puntos.appendChild(p);
+  });
+  carrusel.appendChild(puntos);
+
+  function actual() {
+    return Math.round(pista.scrollLeft / pista.clientWidth);
+  }
+  function ir(i) {
+    pista.scrollTo({ left: i * pista.clientWidth });
+  }
+  function refrescar() {
+    var i = actual();
+    anterior.disabled = i <= 0;
+    siguiente.disabled = i >= fotos.length - 1;
+    puntos.querySelectorAll('button').forEach(function (p, k) {
+      p.classList.toggle('activo', k === i);
+    });
+  }
+
+  anterior.addEventListener('click', function () { ir(actual() - 1); });
+  siguiente.addEventListener('click', function () { ir(actual() + 1); });
+  pista.addEventListener('scroll', function () { window.requestAnimationFrame(refrescar); });
+  window.addEventListener('resize', refrescar);
+  refrescar();
+});
