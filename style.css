@@ -2,6 +2,15 @@
    Variables & Reset
 ================================ */
 
+/* Tipografía del rótulo (Fraunces, alojada en la propia web) */
+@font-face {
+  font-family: 'Titulo';
+  src: url('fuentes/fraunces-900.woff2') format('woff2');
+  font-weight: 900;
+  font-style: normal;
+  font-display: swap;
+}
+
 :root {
   --cream: #f8f4ec;
   --white: #ffffff;
@@ -472,11 +481,18 @@ footer a {
 }
 
 .cabecera-titulo {
-  flex: 1 1 auto;
+  flex: 0 1 auto;
   min-width: 0;
-  max-width: 640px;
-  width: 100%;
-  height: auto;
+  font-family: 'Titulo', Georgia, serif;
+  font-weight: 900;
+  font-size: clamp(14px, 3.9vw, 40px);
+  line-height: 1.1;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  color: #0d0d12;
+  /* borde blanco alrededor de las letras, como el rótulo original */
+  text-shadow: 2px 0 #fff, -2px 0 #fff, 0 2px #fff, 0 -2px #fff,
+               1.5px 1.5px #fff, -1.5px -1.5px #fff, 1.5px -1.5px #fff, -1.5px 1.5px #fff;
 }
 
 .cabecera-castillo {
