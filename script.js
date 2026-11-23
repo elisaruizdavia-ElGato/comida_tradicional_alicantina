@@ -263,7 +263,7 @@ document.querySelectorAll('img.imagen-receta').forEach(function (img) {
 // ================================
 document.querySelectorAll('.carrusel').forEach(function (carrusel) {
   var pista = carrusel.querySelector('.carrusel-pista');
-  var fotos = pista.querySelectorAll('img');
+  var fotos = pista.querySelectorAll('img, video');
   if (fotos.length < 2) return;
 
   function boton(clase, texto, etiqueta) {
