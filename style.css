@@ -481,7 +481,8 @@ footer a {
 
 .cabecera-enlace {
   display: flex;
-  align-items: center;
+  /* rama, título y castillo apoyados en la misma línea de abajo */
+  align-items: flex-end;
   justify-content: center;
   gap: clamp(8px, 2.6vw, 18px);
   max-width: 900px;
@@ -492,7 +493,7 @@ footer a {
 
 .cabecera-rama {
   flex: 0 0 auto;
-  height: clamp(30px, 8vw, 62px);
+  height: clamp(58px, 15.5vw, 112px);
   width: auto;
 }
 
@@ -505,6 +506,8 @@ footer a {
   line-height: 1.15;
   letter-spacing: 0.01em;
   color: #070b13;
+  /* bajar el texto para que la base de las letras toque la línea de abajo */
+  margin-bottom: -0.2em;
 }
 
 /* En el móvil, en dos líneas para que la letra sea más grande */
@@ -515,10 +518,7 @@ footer a {
 
 .cabecera-castillo {
   flex: 0 0 auto;
-  /* subir un poco el castillo para que su cuerpo (sin la bandera)
-     quede a la altura del título y del botón del menú */
-  transform: translateY(-8%);
-  height: clamp(56px, 13vw, 104px);
+  height: clamp(50px, 11.5vw, 88px);
   width: auto;
 }
 
