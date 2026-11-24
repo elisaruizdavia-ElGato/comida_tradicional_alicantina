@@ -324,12 +324,15 @@ document.querySelectorAll('.carrusel').forEach(function (carrusel) {
 
   var actual = decodeURIComponent(location.pathname.split('/').pop());
 
+  // La lista de recetas se guarda en el móvil para tenerla al instante;
+  // se actualiza siempre en segundo plano por si hay recetas nuevas.
   function conLista(cb) {
+    var hecho = false;
     try {
-      var guardada = sessionStorage.getItem('listaRecetas2');
-      if (guardada) { cb(JSON.parse(guardada)); return; }
+      var guardada = localStorage.getItem('listaRecetas2');
+      if (guardada) { cb(JSON.parse(guardada)); hecho = true; }
     } catch (e) {}
-    fetch('index.html')
+    fetch('index.html', { cache: 'no-cache' })
       .then(function (r) { return r.text(); })
       .then(function (texto) {
         var doc = new DOMParser().parseFromString(texto, 'text/html');
@@ -338,18 +341,20 @@ document.querySelectorAll('.carrusel').forEach(function (carrusel) {
           var img = t.querySelector('img');
           lista.push({ href: t.getAttribute('href'), nombre: t.querySelector('.nombre').textContent, foto: img ? img.getAttribute('src') : '' });
         });
-        try { sessionStorage.setItem('listaRecetas2', JSON.stringify(lista)); } catch (e) {}
-        cb(lista);
+        try { localStorage.setItem('listaRecetas2', JSON.stringify(lista)); } catch (e) {}
+        if (!hecho) cb(lista);
       })
       .catch(function () {});
   }
+
+  var ant = null, sig = null;
 
   conLista(function (lista) {
     var i = -1;
     lista.forEach(function (r, k) { if (decodeURIComponent(r.href) === actual) i = k; });
     if (i < 0) return;
-    var ant = lista[i - 1];
-    var sig = lista[i + 1];
+    ant = lista[i - 1] || null;
+    sig = lista[i + 1] || null;
 
     // Enlaces al final de la receta
     var nav = document.createElement('nav');
@@ -369,91 +374,97 @@ document.querySelectorAll('.carrusel').forEach(function (carrusel) {
       if (r.foto) { var im = new Image(); im.src = r.foto; }
     });
 
-    // Gesto de deslizar: la receta sigue al dedo y la vecina entra por el lado
-    var partes = [document.querySelector('.titulo-receta'), wrapper].filter(Boolean);
-    var panel = null, panelDe = null;
-    var x0 = null, y0 = 0, t0 = 0, eje = null, dx = 0, ancho = 1;
-
-    function crearPanel(r, lado) {
-      if (panel) panel.remove();
-      panel = document.createElement('div');
-      panel.className = 'panel-vecino';
-      var cab = document.querySelector('.cabecera');
-      var arriba = cab ? Math.max(0, cab.getBoundingClientRect().bottom) : 0;
-      panel.style.top = arriba + 'px';
-      panel.innerHTML =
-        '<div class="titulo-receta"><span class="volver">‹ Todas las recetas</span><h1></h1></div>' +
-        '<div class="receta-wrapper">' + (r.foto ? '<img class="imagen-receta" alt="" />' : '') + '</div>';
-      panel.querySelector('h1').textContent = r.nombre;
-      if (r.foto) panel.querySelector('img').src = r.foto;
-      document.body.appendChild(panel);
-      panelDe = lado;
-    }
-
-    function pintar(x, conTransicion) {
-      var tr = conTransicion ? 'transform 0.22s ease-out' : 'none';
-      partes.forEach(function (p) { p.style.transition = tr; p.style.transform = x ? 'translateX(' + x + 'px)' : ''; });
-      if (panel) {
-        panel.style.transition = tr;
-        var base = panelDe === 'sig' ? ancho : -ancho;
-        panel.style.transform = 'translateX(' + (base + x) + 'px)';
-      }
-    }
-
-    function reiniciar() {
-      partes.forEach(function (p) { p.style.transition = ''; p.style.transform = ''; });
-      if (panel) { panel.remove(); panel = null; panelDe = null; }
-    }
-
-    document.addEventListener('touchstart', function (e) {
-      x0 = null; eje = null; dx = 0;
-      if (e.touches.length !== 1) return;
-      var t = e.touches[0];
-      // No interferir con el carrusel de fotos, el menú, el visor ni el gesto de "atrás" del borde
-      if (e.target.closest('.carrusel, .menu-lateral, .visor, select, input')) return;
-      if (document.querySelector('.menu-lateral.abierto')) return;
-      if (t.clientX < 24 || t.clientX > window.innerWidth - 24) return;
-      x0 = t.clientX; y0 = t.clientY; t0 = Date.now(); ancho = window.innerWidth;
-    }, { passive: true });
-
-    document.addEventListener('touchmove', function (e) {
-      if (x0 === null) return;
-      var t = e.touches[0];
-      var mx = t.clientX - x0, my = t.clientY - y0;
-      if (!eje) {
-        if (Math.abs(mx) < 8 && Math.abs(my) < 8) return;
-        eje = Math.abs(mx) > Math.abs(my) ? 'h' : 'v';
-        if (eje === 'v') { x0 = null; return; }
-      }
-      e.preventDefault();
-      var destino = mx < 0 ? sig : ant;
-      var lado = mx < 0 ? 'sig' : 'ant';
-      if (destino && panelDe !== lado) crearPanel(destino, lado);
-      if (!destino && panel) { panel.remove(); panel = null; panelDe = null; }
-      dx = destino ? mx : mx * 0.25;   // resistencia si no hay más recetas
-      pintar(dx, false);
-    }, { passive: false });
-
-    function soltar() {
-      if (x0 === null || eje !== 'h') { x0 = null; return; }
-      x0 = null;
-      var vel = Math.abs(dx) / Math.max(1, Date.now() - t0);
-      var destino = dx < 0 ? sig : ant;
-      var pasa = destino && (Math.abs(dx) > ancho * 0.3 || (vel > 0.5 && Math.abs(dx) > 40));
-      if (pasa) {
-        pintar(dx < 0 ? -ancho : ancho, true);
-        setTimeout(function () { location.href = destino.href; }, 200);
-      } else {
-        pintar(0, true);
-        setTimeout(reiniciar, 230);
-      }
-    }
-    document.addEventListener('touchend', soltar, { passive: true });
-    document.addEventListener('touchcancel', soltar, { passive: true });
-
-    // Si se vuelve atrás con el navegador, dejar la receta en su sitio
-    window.addEventListener('pageshow', reiniciar);
   });
+    // Gesto de deslizar: la receta sigue al dedo y la vecina entra por el lado
+  var partes = [document.querySelector('.titulo-receta'), wrapper].filter(Boolean);
+  var panel = null, panelDe = null;
+  var x0 = null, y0 = 0, t0 = 0, eje = null, dx = 0, ancho = 1, muestras = [];
+
+  function crearPanel(r, lado) {
+    if (panel) panel.remove();
+    panel = document.createElement('div');
+    panel.className = 'panel-vecino';
+    var cab = document.querySelector('.cabecera');
+    var arriba = cab ? Math.max(0, cab.getBoundingClientRect().bottom) : 0;
+    panel.style.top = arriba + 'px';
+    panel.innerHTML =
+      '<div class="titulo-receta"><span class="volver">‹ Todas las recetas</span><h1></h1></div>' +
+      '<div class="receta-wrapper">' + (r.foto ? '<img class="imagen-receta" alt="" />' : '') + '</div>';
+    panel.querySelector('h1').textContent = r.nombre;
+    if (r.foto) panel.querySelector('img').src = r.foto;
+    document.body.appendChild(panel);
+    panelDe = lado;
+  }
+
+  function pintar(x, conTransicion) {
+    var tr = conTransicion ? 'transform 0.22s ease-out' : 'none';
+    partes.forEach(function (p) { p.style.transition = tr; p.style.transform = x ? 'translateX(' + x + 'px)' : ''; });
+    if (panel) {
+      panel.style.transition = tr;
+      var base = panelDe === 'sig' ? ancho : -ancho;
+      panel.style.transform = 'translateX(' + (base + x) + 'px)';
+    }
+  }
+
+  function reiniciar() {
+    partes.forEach(function (p) { p.style.transition = ''; p.style.transform = ''; });
+    if (panel) { panel.remove(); panel = null; panelDe = null; }
+  }
+
+  document.addEventListener('touchstart', function (e) {
+    x0 = null; eje = null; dx = 0;
+    if (e.touches.length !== 1) return;
+    var t = e.touches[0];
+    // No interferir con el carrusel de fotos, el menú, el visor ni el gesto de "atrás" del borde
+    if (e.target.closest('.carrusel, .menu-lateral, .visor, select, input')) return;
+    if (document.querySelector('.menu-lateral.abierto')) return;
+    if (t.clientX < 24 || t.clientX > window.innerWidth - 24) return;
+    x0 = t.clientX; y0 = t.clientY; t0 = Date.now(); ancho = window.innerWidth; muestras = [[t0, 0]];
+  }, { passive: true });
+
+  document.addEventListener('touchmove', function (e) {
+    if (x0 === null) return;
+    var t = e.touches[0];
+    var mx = t.clientX - x0, my = t.clientY - y0;
+    if (!eje) {
+      if (Math.abs(mx) < 6 && Math.abs(my) < 6) return;
+      eje = Math.abs(mx) >= Math.abs(my) * 0.9 ? 'h' : 'v';
+      if (eje === 'v') { x0 = null; return; }
+    }
+    e.preventDefault();
+    var destino = mx < 0 ? sig : ant;
+    var lado = mx < 0 ? 'sig' : 'ant';
+    if (destino && panelDe !== lado) crearPanel(destino, lado);
+    if (!destino && panel) { panel.remove(); panel = null; panelDe = null; }
+    dx = destino ? mx : mx * 0.25;   // resistencia si no hay más recetas
+    var ahora = Date.now();
+    muestras.push([ahora, mx]);
+    while (muestras.length > 2 && ahora - muestras[0][0] > 120) muestras.shift();
+    pintar(dx, false);
+  }, { passive: false });
+
+  function soltar() {
+    if (x0 === null || eje !== 'h') { x0 = null; return; }
+    x0 = null;
+    // velocidad de los últimos ~120 ms (un toque rápido cuenta aunque sea corto)
+    var p0 = muestras[0], p1 = muestras[muestras.length - 1];
+    var vel = (p1[1] - p0[1]) / Math.max(1, p1[0] - p0[0]);
+    var destino = dx < 0 ? sig : ant;
+    var mismoSentido = (vel < 0) === (dx < 0);
+    var pasa = destino && (Math.abs(dx) > ancho * 0.22 || (mismoSentido && Math.abs(vel) > 0.25 && Math.abs(dx) > 30));
+    if (pasa) {
+      pintar(dx < 0 ? -ancho : ancho, true);
+      setTimeout(function () { location.href = destino.href; }, 200);
+    } else {
+      pintar(0, true);
+      setTimeout(reiniciar, 230);
+    }
+  }
+  document.addEventListener('touchend', soltar, { passive: true });
+  document.addEventListener('touchcancel', soltar, { passive: true });
+
+  // Si se vuelve atrás con el navegador, dejar la receta en su sitio
+  window.addEventListener('pageshow', reiniciar);
 })();
 
 // ================================
