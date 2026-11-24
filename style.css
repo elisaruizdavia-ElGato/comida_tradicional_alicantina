@@ -2,11 +2,18 @@
    Variables & Reset
 ================================ */
 
-/* Tipografía del rótulo (Fraunces, alojada en la propia web) */
+/* Tipografía del rótulo (Montserrat Alternates, alojada en la propia web) */
 @font-face {
   font-family: 'Titulo';
-  src: url('fuentes/fraunces-900.woff2') format('woff2');
-  font-weight: 900;
+  src: url('fuentes/montserrat-alternates-400.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Titulo';
+  src: url('fuentes/montserrat-alternates-300.woff2') format('woff2');
+  font-weight: 300;
   font-style: normal;
   font-display: swap;
 }
@@ -476,35 +483,59 @@ footer a {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 14px;
+  gap: clamp(8px, 2.6vw, 18px);
   max-width: 900px;
   margin: 0 auto;
   padding: 13px 16px;
   text-decoration: none;
 }
 
+.cabecera-rama {
+  flex: 0 0 auto;
+  height: clamp(30px, 8vw, 62px);
+  width: auto;
+}
+
 .cabecera-titulo {
   flex: 0 1 auto;
   min-width: 0;
-  font-family: 'Titulo', Georgia, serif;
-  font-weight: 900;
-  font-size: clamp(14px, 3.9vw, 40px);
-  line-height: 1.1;
+  font-family: 'Titulo', 'Montserrat', sans-serif;
+  font-weight: 400;
+  font-size: clamp(15px, 4.4vw, 34px);
+  line-height: 1.15;
   letter-spacing: 0.01em;
+  color: #070b13;
+}
+
+/* En el móvil, en dos líneas para que la letra sea más grande */
+.cabecera-titulo span {
+  display: block;
   white-space: nowrap;
-  color: #0d0d12;
-  /* borde blanco alrededor de las letras, como el rótulo original */
-  text-shadow: 2px 0 #fff, -2px 0 #fff, 0 2px #fff, 0 -2px #fff,
-               1.5px 1.5px #fff, -1.5px -1.5px #fff, 1.5px -1.5px #fff, -1.5px 1.5px #fff;
 }
 
 .cabecera-castillo {
   flex: 0 0 auto;
   /* subir un poco el castillo para que su cuerpo (sin la bandera)
      quede a la altura del título y del botón del menú */
-  transform: translateY(-9%);
-  height: clamp(58px, 11vw, 110px);
+  transform: translateY(-8%);
+  height: clamp(56px, 13vw, 104px);
   width: auto;
+}
+
+/* Móviles muy estrechos: sin la rama, para que quepa el título */
+@media (max-width: 350px) {
+  .cabecera-rama {
+    display: none;
+  }
+}
+
+@media (min-width: 640px) {
+  .cabecera-titulo {
+    font-weight: 300;
+  }
+  .cabecera-titulo span {
+    display: inline;
+  }
 }
 
 
@@ -528,6 +559,17 @@ footer a {
   height: auto;
   transform: scale(1.08);
   clip-path: inset(0 4%);
+}
+
+/* ================================
+   Palmerita al final de "Sobre mí"
+================================ */
+
+.sobre-mi .palmera {
+  display: block;
+  width: 150px;
+  height: auto;
+  margin: 28px auto 0;
 }
 
 /* ================================
