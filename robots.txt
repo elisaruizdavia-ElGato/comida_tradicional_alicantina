@@ -1,0 +1,4 @@
+User-agent: *
+Disallow: /_plantilla.html
+
+Sitemap: https://elisaruizdavia-elgato.github.io/comida_tradicional_alicantina/sitemap.xml
