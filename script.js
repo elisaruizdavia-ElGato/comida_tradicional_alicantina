@@ -207,7 +207,7 @@ document.querySelectorAll('img.imagen-receta').forEach(function (img) {
     var actual = decodeURIComponent(location.pathname.split('/').pop());
     var html = '<div class="menu-cabecera"><span>Recetas</span>' +
       '<button type="button" class="menu-cerrar" aria-label="Cerrar el menú">✕</button></div>' +
-      '<a class="menu-inicio" href="index.html">Inicio</a>';
+      '<a class="menu-inicio" href="index.html">Todas las recetas</a>';
     docPortada.querySelectorAll('.seccion').forEach(function (sec) {
       var titulo = sec.querySelector('h2');
       html += '<h3>' + (titulo ? titulo.textContent : '') + '</h3><ul>';
@@ -326,7 +326,7 @@ document.querySelectorAll('.carrusel').forEach(function (carrusel) {
 
   function conLista(cb) {
     try {
-      var guardada = sessionStorage.getItem('listaRecetas');
+      var guardada = sessionStorage.getItem('listaRecetas2');
       if (guardada) { cb(JSON.parse(guardada)); return; }
     } catch (e) {}
     fetch('index.html')
@@ -335,9 +335,10 @@ document.querySelectorAll('.carrusel').forEach(function (carrusel) {
         var doc = new DOMParser().parseFromString(texto, 'text/html');
         var lista = [];
         doc.querySelectorAll('.seccion .tarjeta').forEach(function (t) {
-          lista.push({ href: t.getAttribute('href'), nombre: t.querySelector('.nombre').textContent });
+          var img = t.querySelector('img');
+          lista.push({ href: t.getAttribute('href'), nombre: t.querySelector('.nombre').textContent, foto: img ? img.getAttribute('src') : '' });
         });
-        try { sessionStorage.setItem('listaRecetas', JSON.stringify(lista)); } catch (e) {}
+        try { sessionStorage.setItem('listaRecetas2', JSON.stringify(lista)); } catch (e) {}
         cb(lista);
       })
       .catch(function () {});
@@ -359,35 +360,99 @@ document.querySelectorAll('.carrusel').forEach(function (carrusel) {
       (sig ? '<a class="siguiente" href="' + sig.href + '"><small>Siguiente ›</small>' + sig.nombre + '</a>' : '<span></span>');
     wrapper.appendChild(nav);
 
-    // Gesto de deslizar
-    var x0 = null, y0 = 0, t0 = 0;
+    // Precargar las recetas vecinas para que el cambio sea rápido
+    [ant, sig].forEach(function (r) {
+      if (!r) return;
+      var l = document.createElement('link');
+      l.rel = 'prefetch'; l.href = r.href;
+      document.head.appendChild(l);
+      if (r.foto) { var im = new Image(); im.src = r.foto; }
+    });
+
+    // Gesto de deslizar: la receta sigue al dedo y la vecina entra por el lado
+    var partes = [document.querySelector('.titulo-receta'), wrapper].filter(Boolean);
+    var panel = null, panelDe = null;
+    var x0 = null, y0 = 0, t0 = 0, eje = null, dx = 0, ancho = 1;
+
+    function crearPanel(r, lado) {
+      if (panel) panel.remove();
+      panel = document.createElement('div');
+      panel.className = 'panel-vecino';
+      var cab = document.querySelector('.cabecera');
+      var arriba = cab ? Math.max(0, cab.getBoundingClientRect().bottom) : 0;
+      panel.style.top = arriba + 'px';
+      panel.innerHTML =
+        '<div class="titulo-receta"><span class="volver">‹ Todas las recetas</span><h1></h1></div>' +
+        '<div class="receta-wrapper">' + (r.foto ? '<img class="imagen-receta" alt="" />' : '') + '</div>';
+      panel.querySelector('h1').textContent = r.nombre;
+      if (r.foto) panel.querySelector('img').src = r.foto;
+      document.body.appendChild(panel);
+      panelDe = lado;
+    }
+
+    function pintar(x, conTransicion) {
+      var tr = conTransicion ? 'transform 0.22s ease-out' : 'none';
+      partes.forEach(function (p) { p.style.transition = tr; p.style.transform = x ? 'translateX(' + x + 'px)' : ''; });
+      if (panel) {
+        panel.style.transition = tr;
+        var base = panelDe === 'sig' ? ancho : -ancho;
+        panel.style.transform = 'translateX(' + (base + x) + 'px)';
+      }
+    }
+
+    function reiniciar() {
+      partes.forEach(function (p) { p.style.transition = ''; p.style.transform = ''; });
+      if (panel) { panel.remove(); panel = null; panelDe = null; }
+    }
+
     document.addEventListener('touchstart', function (e) {
-      x0 = null;
+      x0 = null; eje = null; dx = 0;
       if (e.touches.length !== 1) return;
       var t = e.touches[0];
-      // No interferir con el carrusel de fotos, el menú ni el gesto de "atrás" del borde
+      // No interferir con el carrusel de fotos, el menú, el visor ni el gesto de "atrás" del borde
       if (e.target.closest('.carrusel, .menu-lateral, .visor, select, input')) return;
-      if (t.clientX < 30 || t.clientX > window.innerWidth - 30) return;
-      x0 = t.clientX; y0 = t.clientY; t0 = Date.now();
+      if (document.querySelector('.menu-lateral.abierto')) return;
+      if (t.clientX < 24 || t.clientX > window.innerWidth - 24) return;
+      x0 = t.clientX; y0 = t.clientY; t0 = Date.now(); ancho = window.innerWidth;
     }, { passive: true });
 
-    document.addEventListener('touchend', function (e) {
+    document.addEventListener('touchmove', function (e) {
       if (x0 === null) return;
-      var t = e.changedTouches[0];
-      var dx = t.clientX - x0, dy = t.clientY - y0;
-      x0 = null;
-      if (Date.now() - t0 > 700) return;
-      if (Math.abs(dx) < 70 || Math.abs(dx) < Math.abs(dy) * 2) return;
-      var destino = dx < 0 ? sig : ant;
-      if (!destino) return;
-      document.body.classList.add(dx < 0 ? 'salida-izq' : 'salida-der');
-      setTimeout(function () { location.href = destino.href; }, 160);
-    }, { passive: true });
+      var t = e.touches[0];
+      var mx = t.clientX - x0, my = t.clientY - y0;
+      if (!eje) {
+        if (Math.abs(mx) < 8 && Math.abs(my) < 8) return;
+        eje = Math.abs(mx) > Math.abs(my) ? 'h' : 'v';
+        if (eje === 'v') { x0 = null; return; }
+      }
+      e.preventDefault();
+      var destino = mx < 0 ? sig : ant;
+      var lado = mx < 0 ? 'sig' : 'ant';
+      if (destino && panelDe !== lado) crearPanel(destino, lado);
+      if (!destino && panel) { panel.remove(); panel = null; panelDe = null; }
+      dx = destino ? mx : mx * 0.25;   // resistencia si no hay más recetas
+      pintar(dx, false);
+    }, { passive: false });
 
-    // Si se vuelve atrás con el navegador, quitar la animación de salida
-    window.addEventListener('pageshow', function () {
-      document.body.classList.remove('salida-izq', 'salida-der');
-    });
+    function soltar() {
+      if (x0 === null || eje !== 'h') { x0 = null; return; }
+      x0 = null;
+      var vel = Math.abs(dx) / Math.max(1, Date.now() - t0);
+      var destino = dx < 0 ? sig : ant;
+      var pasa = destino && (Math.abs(dx) > ancho * 0.3 || (vel > 0.5 && Math.abs(dx) > 40));
+      if (pasa) {
+        pintar(dx < 0 ? -ancho : ancho, true);
+        setTimeout(function () { location.href = destino.href; }, 200);
+      } else {
+        pintar(0, true);
+        setTimeout(reiniciar, 230);
+      }
+    }
+    document.addEventListener('touchend', soltar, { passive: true });
+    document.addEventListener('touchcancel', soltar, { passive: true });
+
+    // Si se vuelve atrás con el navegador, dejar la receta en su sitio
+    window.addEventListener('pageshow', reiniciar);
   });
 })();
 

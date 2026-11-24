@@ -1015,17 +1015,25 @@ footer a {
   color: #024796;
 }
 
-body.salida-izq .titulo-receta,
-body.salida-izq .receta-wrapper,
-body.salida-der .titulo-receta,
-body.salida-der .receta-wrapper {
-  transition: transform 0.16s ease-in, opacity 0.16s ease-in;
-  opacity: 0;
+/* Receta vecina que entra por el lado al deslizar */
+.panel-vecino {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 50;
+  background: var(--cream);
+  overflow: hidden;
+  pointer-events: none;
 }
-body.salida-izq .titulo-receta,
-body.salida-izq .receta-wrapper { transform: translateX(-40px); }
-body.salida-der .titulo-receta,
-body.salida-der .receta-wrapper { transform: translateX(40px); }
+
+.panel-vecino .imagen-receta {
+  cursor: default;
+}
+
+body {
+  overflow-x: clip;
+}
 
 
 /* ================================
