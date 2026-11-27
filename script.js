@@ -1,7 +1,14 @@
 // ================================
+// Todo lo que va dentro de una receta se prepara con esta función.
+// Se llama al abrir la página y también con la receta vecina
+// cuando se pasa de una a otra deslizando el dedo (sin recargar).
+// ================================
+function iniciarContenido(raiz) {
+
+// ================================
 // Marcar/desmarcar ingredientes al tocar
 // ================================
-document.querySelectorAll('.ingredientes li').forEach(function (li) {
+raiz.querySelectorAll('.ingredientes li').forEach(function (li) {
   li.addEventListener('click', function () {
     this.classList.toggle('checked');
   });
@@ -15,8 +22,8 @@ document.querySelectorAll('.ingredientes li').forEach(function (li) {
 // (o lo último que eligió el visitante).
 // ================================
 (function () {
-  var lista = document.querySelector('.ingredientes');
-  var card = document.querySelector('.card-ingredientes');
+  var lista = raiz.querySelector('.ingredientes');
+  var card = raiz.querySelector('.card-ingredientes');
   if (!lista || !card || lista.hasAttribute('data-sin-comensales')) return;
 
   var base = parseFloat(lista.getAttribute('data-comensales')) || 2;
@@ -165,11 +172,28 @@ document.querySelectorAll('.ingredientes li').forEach(function (li) {
 // ================================
 // Si falta la foto de la receta, ocultar el hueco roto
 // ================================
-document.querySelectorAll('img.imagen-receta').forEach(function (img) {
+raiz.querySelectorAll('img.imagen-receta').forEach(function (img) {
   function ocultar() { img.style.display = 'none'; }
   if (img.complete && img.naturalWidth === 0) ocultar();
   img.addEventListener('error', ocultar);
 });
+
+// ================================
+// Carrusel de fotos: flechas y puntitos
+// En el HTML basta con poner las fotos dentro de
+// <div class="carrusel"><div class="carrusel-pista"> ... </div></div>
+// ================================
+raiz.querySelectorAll('.carrusel').forEach(iniciarCarrusel);
+
+// ================================
+// Tocar una foto de la receta para verla en grande
+// ================================
+raiz.querySelectorAll('.receta-wrapper .imagen-receta').forEach(function (f) {
+  f.addEventListener('click', function () { abrirVisor(f); });
+});
+
+}
+iniciarContenido(document);
 
 // ================================
 // Menú lateral (botón ☰ de la cabecera)
@@ -192,6 +216,13 @@ document.querySelectorAll('img.imagen-receta').forEach(function (img) {
   }
 
   function abrir() {
+    // Marcar la receta que se está viendo (puede haber cambiado al deslizar)
+    var actual = decodeURIComponent(location.pathname.split('/').pop());
+    panel.querySelectorAll('ul a').forEach(function (a) {
+      var esta = decodeURIComponent(a.getAttribute('href')) === actual;
+      a.classList.toggle('actual', esta);
+      if (esta) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current');
+    });
     panel.classList.add('abierto');
     fondo.classList.add('abierto');
     boton.setAttribute('aria-expanded', 'true');
@@ -204,7 +235,6 @@ document.querySelectorAll('img.imagen-receta').forEach(function (img) {
     panel = document.createElement('nav');
     panel.className = 'menu-lateral';
     panel.setAttribute('aria-label', 'Recetas');
-    var actual = decodeURIComponent(location.pathname.split('/').pop());
     var html = '<div class="menu-cabecera"><span>Recetas</span>' +
       '<button type="button" class="menu-cerrar" aria-label="Cerrar el menú">✕</button></div>' +
       '<a class="menu-inicio" href="index.html">Todas las recetas</a>';
@@ -214,8 +244,7 @@ document.querySelectorAll('img.imagen-receta').forEach(function (img) {
       sec.querySelectorAll('.tarjeta').forEach(function (t) {
         var href = t.getAttribute('href');
         var nombre = t.querySelector('.nombre').textContent;
-        var esta = decodeURIComponent(href) === actual ? ' class="actual" aria-current="page"' : '';
-        html += '<li><a href="' + href + '"' + esta + '>' + nombre + '</a></li>';
+        html += '<li><a href="' + href + '">' + nombre + '</a></li>';
       });
       html += '</ul>';
     });
@@ -256,12 +285,7 @@ document.querySelectorAll('img.imagen-receta').forEach(function (img) {
   });
 })();
 
-// ================================
-// Carrusel de fotos: flechas y puntitos
-// En el HTML basta con poner las fotos dentro de
-// <div class="carrusel"><div class="carrusel-pista"> ... </div></div>
-// ================================
-document.querySelectorAll('.carrusel').forEach(function (carrusel) {
+function iniciarCarrusel(carrusel) {
   var pista = carrusel.querySelector('.carrusel-pista');
   var fotos = pista.querySelectorAll('img, video');
   if (fotos.length < 2) return;
@@ -309,20 +333,60 @@ document.querySelectorAll('.carrusel').forEach(function (carrusel) {
   pista.addEventListener('scroll', function () { window.requestAnimationFrame(refrescar); });
   window.addEventListener('resize', refrescar);
   refrescar();
-});
+}
 
 // ================================
 // Pasar de receta deslizando el dedo
 // Izquierda → siguiente receta, derecha → anterior.
 // El orden es el de la portada. Abajo de cada receta
 // también salen enlaces a la anterior y la siguiente.
+// La receta vecina se descarga por adelantado (texto y foto grande)
+// y al deslizar se cambia en el sitio, sin recargar la página,
+// para que no haya parpadeo.
 // ================================
 (function () {
-  var wrapper = document.querySelector('.receta-wrapper');
-  if (!wrapper || document.querySelector('.seccion') || !document.querySelector('.card-ingredientes')) return;
+  if (!document.querySelector('.receta-wrapper') || document.querySelector('.seccion') || !document.querySelector('.card-ingredientes')) return;
   if (!window.fetch || !window.DOMParser) return;
 
-  var actual = decodeURIComponent(location.pathname.split('/').pop());
+  var lista = null;
+  var ant = null, sig = null;
+  var docs = {};       // recetas ya descargadas: href → documento
+  var pedidas = {};    // descargas en marcha
+  var fotosListas = []; // para que el navegador no suelte las fotos precargadas
+
+  function nombreArchivo(url) {
+    return decodeURIComponent(url.split('#')[0].split('?')[0].split('/').pop());
+  }
+
+  function contenidoDe(raiz) {
+    return {
+      titulo: raiz.querySelector('.titulo-receta'),
+      wrapper: raiz.querySelector('.receta-wrapper')
+    };
+  }
+
+  function descargar(href) {
+    if (docs[href] || pedidas[href]) return pedidas[href] || Promise.resolve(docs[href]);
+    pedidas[href] = fetch(href)
+      .then(function (r) { if (!r.ok) throw new Error(r.status); return r.text(); })
+      .then(function (texto) {
+        var doc = new DOMParser().parseFromString(texto, 'text/html');
+        if (!doc.querySelector('.receta-wrapper')) throw new Error('no es receta');
+        // Precargar y descodificar la foto grande para que aparezca ya pintada
+        var foto = doc.querySelector('.receta-wrapper img.imagen-receta');
+        if (foto) {
+          var im = new Image();
+          im.src = foto.getAttribute('src');
+          fotosListas.push(im);
+          if (im.decode) im.decode().catch(function () {});
+        }
+        docs[href] = doc;
+        delete pedidas[href];
+        return doc;
+      })
+      .catch(function (e) { delete pedidas[href]; throw e; });
+    return pedidas[href];
+  }
 
   // La lista de recetas se guarda en el móvil para tenerla al instante;
   // se actualiza siempre en segundo plano por si hay recetas nuevas.
@@ -336,27 +400,33 @@ document.querySelectorAll('.carrusel').forEach(function (carrusel) {
       .then(function (r) { return r.text(); })
       .then(function (texto) {
         var doc = new DOMParser().parseFromString(texto, 'text/html');
-        var lista = [];
+        var nueva = [];
         doc.querySelectorAll('.seccion .tarjeta').forEach(function (t) {
           var img = t.querySelector('img');
-          lista.push({ href: t.getAttribute('href'), nombre: t.querySelector('.nombre').textContent, foto: img ? img.getAttribute('src') : '' });
+          nueva.push({ href: t.getAttribute('href'), nombre: t.querySelector('.nombre').textContent, foto: img ? img.getAttribute('src') : '' });
         });
-        try { localStorage.setItem('listaRecetas2', JSON.stringify(lista)); } catch (e) {}
-        if (!hecho) cb(lista);
+        try { localStorage.setItem('listaRecetas2', JSON.stringify(nueva)); } catch (e) {}
+        if (!hecho) cb(nueva);
+        else lista = nueva;
       })
       .catch(function () {});
   }
 
-  var ant = null, sig = null;
-
-  conLista(function (lista) {
+  // Calcula la anterior y la siguiente de la receta que se está viendo,
+  // pone los enlaces de abajo y descarga las dos vecinas.
+  function prepararVecinos() {
+    ant = sig = null;
+    if (!lista) return;
+    var actual = nombreArchivo(location.pathname);
     var i = -1;
     lista.forEach(function (r, k) { if (decodeURIComponent(r.href) === actual) i = k; });
     if (i < 0) return;
     ant = lista[i - 1] || null;
     sig = lista[i + 1] || null;
 
-    // Enlaces al final de la receta
+    var wrapper = document.querySelector('body > .receta-wrapper') || document.querySelector('.receta-wrapper');
+    var vieja = wrapper.querySelector('.entre-recetas');
+    if (vieja) vieja.remove();
     var nav = document.createElement('nav');
     nav.className = 'entre-recetas';
     nav.setAttribute('aria-label', 'Otras recetas');
@@ -365,20 +435,66 @@ document.querySelectorAll('.carrusel').forEach(function (carrusel) {
       (sig ? '<a class="siguiente" href="' + sig.href + '"><small>Siguiente ›</small>' + sig.nombre + '</a>' : '<span></span>');
     wrapper.appendChild(nav);
 
-    // Precargar las recetas vecinas para que el cambio sea rápido
-    [ant, sig].forEach(function (r) {
-      if (!r) return;
-      var l = document.createElement('link');
-      l.rel = 'prefetch'; l.href = r.href;
-      document.head.appendChild(l);
-      if (r.foto) { var im = new Image(); im.src = r.foto; }
-    });
+    [ant, sig].forEach(function (r) { if (r) descargar(r.href).catch(function () {}); });
+  }
 
+  conLista(function (l) { lista = l; prepararVecinos(); });
+
+  // Enlaces "Anterior / Siguiente" de abajo: también sin recargar
+  document.addEventListener('click', function (e) {
+    var a = e.target.closest('.entre-recetas a');
+    if (!a || e.metaKey || e.ctrlKey || e.shiftKey) return;
+    var href = a.getAttribute('href');
+    if (!docs[href]) return; // aún no descargada: navegación normal
+    e.preventDefault();
+    poner(docs[href], href, true, 0);
   });
-    // Gesto de deslizar: la receta sigue al dedo y la vecina entra por el lado
-  var partes = [document.querySelector('.titulo-receta'), wrapper].filter(Boolean);
-  var panel = null, panelDe = null;
+
+  // Sustituye la receta de la página por otra
+  //   fuente: {titulo, wrapper} ya preparado, o un documento descargado
+  function poner(fuente, href, guardarHistorial, scrollNuevo) {
+    var viejo = contenidoDe(document);
+    var nuevo;
+    if (fuente.nodeType === 9) { // documento descargado: prepararlo aparte
+      var c = contenidoDe(fuente);
+      var caja = document.createElement('div');
+      nuevo = {
+        titulo: caja.appendChild(document.importNode(c.titulo, true)),
+        wrapper: caja.appendChild(document.importNode(c.wrapper, true))
+      };
+      iniciarContenido(caja);
+    } else {
+      nuevo = fuente;
+    }
+    nuevo.titulo.style.transition = nuevo.titulo.style.transform = '';
+    nuevo.wrapper.style.transition = nuevo.wrapper.style.transform = '';
+    viejo.titulo.replaceWith(nuevo.titulo);
+    viejo.wrapper.replaceWith(nuevo.wrapper);
+    var doc = docs[href];
+    if (doc) document.title = doc.title;
+    if (guardarHistorial) history.pushState({ receta: href }, '', href);
+    window.scrollTo(0, scrollNuevo || 0);
+    try { window.dispatchEvent(new Event('resize')); } catch (e) {} // recolocar carruseles
+    prepararVecinos();
+  }
+
+  // Botón "atrás"/"adelante" del navegador entre recetas
+  window.addEventListener('popstate', function () {
+    var href = nombreArchivo(location.pathname);
+    var listo = docs[href] ? Promise.resolve(docs[href]) : descargar(href);
+    listo.then(function (doc) { poner(doc, href, false, 0); })
+      .catch(function () { location.reload(); });
+  });
+
+  // Gesto de deslizar: la receta sigue al dedo y la vecina entra por el lado
+  var panel = null, panelDe = null, panelNuevo = null;
   var x0 = null, y0 = 0, t0 = 0, eje = null, dx = 0, ancho = 1, muestras = [];
+  var cambiando = false;
+
+  function partes() {
+    var c = contenidoDe(document);
+    return [c.titulo, c.wrapper].filter(Boolean);
+  }
 
   function crearPanel(r, lado) {
     if (panel) panel.remove();
@@ -387,18 +503,33 @@ document.querySelectorAll('.carrusel').forEach(function (carrusel) {
     var cab = document.querySelector('.cabecera');
     var arriba = cab ? Math.max(0, cab.getBoundingClientRect().bottom) : 0;
     panel.style.top = arriba + 'px';
-    panel.innerHTML =
-      '<div class="titulo-receta"><span class="volver">‹ Todas las recetas</span><h1></h1></div>' +
-      '<div class="receta-wrapper">' + (r.foto ? '<img class="imagen-receta" alt="" />' : '') + '</div>';
-    panel.querySelector('h1').textContent = r.nombre;
-    if (r.foto) panel.querySelector('img').src = r.foto;
+    panelNuevo = null;
+    var doc = docs[r.href];
+    if (doc) {
+      // La receta de verdad, ya preparada: al soltar se queda tal cual
+      var c = contenidoDe(doc);
+      panelNuevo = {
+        titulo: document.importNode(c.titulo, true),
+        wrapper: document.importNode(c.wrapper, true)
+      };
+      panel.appendChild(panelNuevo.titulo);
+      panel.appendChild(panelNuevo.wrapper);
+      document.body.appendChild(panel);
+      iniciarContenido(panel);
+    } else {
+      panel.innerHTML =
+        '<div class="titulo-receta"><span class="volver">‹ Todas las recetas</span><h1></h1></div>' +
+        '<div class="receta-wrapper">' + (r.foto ? '<img class="imagen-receta" alt="" />' : '') + '</div>';
+      panel.querySelector('h1').textContent = r.nombre;
+      if (r.foto) panel.querySelector('img').src = r.foto;
+    }
     document.body.appendChild(panel);
     panelDe = lado;
   }
 
   function pintar(x, conTransicion) {
     var tr = conTransicion ? 'transform 0.22s ease-out' : 'none';
-    partes.forEach(function (p) { p.style.transition = tr; p.style.transform = x ? 'translateX(' + x + 'px)' : ''; });
+    partes().forEach(function (p) { p.style.transition = tr; p.style.transform = x ? 'translateX(' + x + 'px)' : ''; });
     if (panel) {
       panel.style.transition = tr;
       var base = panelDe === 'sig' ? ancho : -ancho;
@@ -407,13 +538,13 @@ document.querySelectorAll('.carrusel').forEach(function (carrusel) {
   }
 
   function reiniciar() {
-    partes.forEach(function (p) { p.style.transition = ''; p.style.transform = ''; });
-    if (panel) { panel.remove(); panel = null; panelDe = null; }
+    partes().forEach(function (p) { p.style.transition = ''; p.style.transform = ''; });
+    if (panel) { panel.remove(); panel = null; panelDe = null; panelNuevo = null; }
   }
 
   document.addEventListener('touchstart', function (e) {
     x0 = null; eje = null; dx = 0;
-    if (e.touches.length !== 1) return;
+    if (cambiando || e.touches.length !== 1) return;
     var t = e.touches[0];
     // No interferir con el carrusel de fotos, el menú, el visor ni el gesto de "atrás" del borde
     if (e.target.closest('.carrusel, .menu-lateral, .visor, select, input')) return;
@@ -435,7 +566,7 @@ document.querySelectorAll('.carrusel').forEach(function (carrusel) {
     var destino = mx < 0 ? sig : ant;
     var lado = mx < 0 ? 'sig' : 'ant';
     if (destino && panelDe !== lado) crearPanel(destino, lado);
-    if (!destino && panel) { panel.remove(); panel = null; panelDe = null; }
+    if (!destino && panel) { panel.remove(); panel = null; panelDe = null; panelNuevo = null; }
     dx = destino ? mx : mx * 0.25;   // resistencia si no hay más recetas
     var ahora = Date.now();
     muestras.push([ahora, mx]);
@@ -453,8 +584,25 @@ document.querySelectorAll('.carrusel').forEach(function (carrusel) {
     var mismoSentido = (vel < 0) === (dx < 0);
     var pasa = destino && (Math.abs(dx) > ancho * 0.22 || (mismoSentido && Math.abs(vel) > 0.25 && Math.abs(dx) > 30));
     if (pasa) {
+      cambiando = true;
       pintar(dx < 0 ? -ancho : ancho, true);
-      setTimeout(function () { location.href = destino.href; }, 200);
+      setTimeout(function () {
+        cambiando = false;
+        if (panelNuevo) {
+          // La vecina ya está en pantalla: se queda en la página tal cual,
+          // con el desplazamiento justo para que no se mueva nada
+          var cab = document.querySelector('.cabecera');
+          var finCab = cab ? cab.getBoundingClientRect().bottom + window.scrollY : 0;
+          var scrollNuevo = Math.min(window.scrollY, finCab);
+          var nuevo = panelNuevo;
+          var p = panel;
+          panel = null; panelDe = null; panelNuevo = null;
+          poner(nuevo, destino.href, true, scrollNuevo);
+          p.remove();
+        } else {
+          location.href = destino.href;
+        }
+      }, 220);
     } else {
       pintar(0, true);
       setTimeout(reiniciar, 230);
@@ -468,13 +616,9 @@ document.querySelectorAll('.carrusel').forEach(function (carrusel) {
 })();
 
 // ================================
-// Tocar una foto de la receta para verla en grande
+// Foto en grande (visor)
 // ================================
-(function () {
-  var fotos = document.querySelectorAll('.receta-wrapper .imagen-receta');
-  if (!fotos.length) return;
-
-  function abrir(original) {
+function abrirVisor(original) {
     var visor = document.createElement('div');
     visor.className = 'visor';
     visor.setAttribute('role', 'dialog');
@@ -509,9 +653,4 @@ document.querySelectorAll('.carrusel').forEach(function (carrusel) {
     visor.addEventListener('click', cerrar);
     document.addEventListener('keydown', tecla);
     cerrarBtn.focus();
-  }
-
-  fotos.forEach(function (f) {
-    f.addEventListener('click', function () { abrir(f); });
-  });
-})();
+}

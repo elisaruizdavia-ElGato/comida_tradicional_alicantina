@@ -445,24 +445,6 @@ footer a {
   color: var(--mark);
 }
 
-/* ================================
-   Contador de visitas
-================================ */
-
-.contador {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-family: var(--font-ui);
-  font-size: 13px;
-  color: var(--text-muted);
-}
-
-.contador img {
-  height: 20px;
-  vertical-align: middle;
-}
-
 .sobre-mi a {
   color: var(--accent);
   font-family: var(--font-ui);
